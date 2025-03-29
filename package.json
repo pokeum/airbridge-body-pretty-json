@@ -14,10 +14,30 @@
   "activationEvents": [],
   "main": "./extension.js",
   "contributes": {
-    "commands": [{
-      "command": "airbridge-body-pretty-json.airbridgePrettyJson",
-      "title": "Airbridge Pretty Json"
-    }]
+    "commands": [
+      {
+        "command": "airbridge-body-pretty-json.airbridgePrettyJson",
+        "title": "Airbridge Pretty Json"
+      },
+      {
+        "command": "airbridge-body-pretty-json.airbridgePrettyJsonAll",
+        "title": "Airbridge Pretty Json (All)"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "airbridge-body-pretty-json.airbridgePrettyJson",
+          "when": "editorHasSelection && resourceLangId == log",
+          "group": "AirbridgePrettyJsonGroup@1"
+        },
+        {
+          "command": "airbridge-body-pretty-json.airbridgePrettyJsonAll",
+          "when": "editorHasSelection && resourceLangId == log",
+          "group": "AirbridgePrettyJsonGroup@2"
+        }
+      ]
+    }
   },
   "scripts": {
     "lint": "eslint .",

@@ -77,34 +77,35 @@ function sortLogs(logEntries) {
     // Regular expression to match the date and timestamp at the start of a log entry
     const dateAndTimestampRegex = /^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\.\d{3}/;
 
-    return [...logEntries].sort((a, b) => {
-        // Extract timestamp strings from each log entry
-        const dateAndTimestampA = a.match(dateAndTimestampRegex)?.[0];
-        const dateAndTimestampB = b.match(dateAndTimestampRegex)?.[0];
+    return logEntries
+        .sort((a, b) => {
+            // Extract timestamp strings from each log entry
+            const dateAndTimestampA = a.match(dateAndTimestampRegex)?.[0];
+            const dateAndTimestampB = b.match(dateAndTimestampRegex)?.[0];
 
-        // Convert to Date objects (or default to epoch if not found)
-        const dateA = dateAndTimestampA ? new Date(dateAndTimestampA.replace(/\s+/, 'T')) : new Date(0);
-        const dateB = dateAndTimestampB ? new Date(dateAndTimestampB.replace(/\s+/, 'T')) : new Date(0);
+            // Convert to Date objects (or default to epoch if not found)
+            const dateA = dateAndTimestampA ? new Date(dateAndTimestampA.replace(/\s+/, 'T')) : new Date(0);
+            const dateB = dateAndTimestampB ? new Date(dateAndTimestampB.replace(/\s+/, 'T')) : new Date(0);
 
-        // Sort by chronological order
-        return dateA.getTime() - dateB.getTime();
-    });
+            // Sort by chronological order
+            return dateA.getTime() - dateB.getTime();
+        });
 }
 
 /**
- * Extracts the value inside `body={...}` from the input string,
+ * Extracts the value inside `body={...}` from each log entry,
  * stopping before the `bodySize=` part.
  * 
- * @param {string} input    The input string containing the `body={...}` pattern.
- * @returns {string|null}   The extracted body content, or null if not found.
+ * @param {string[]} logEntries     An array of log entry strings.
+ * @returns {string[]}              An array of extracted body contents.
  */
-function extractBody(input) {
-    const match = input.match(/body=\{([\s\S]*?)\}(?=\sbodySize=)/);
-    if (match) {
-        return match[1];
-    } else {
-        return null;
-    }
+function extractBodies(logEntries) {
+    return logEntries
+        .map(log => {
+            const match = log.match(/body=\{([\s\S]*?)\}(?=\sbodySize=)/);
+            return match ? match[1] : null
+        })
+        .filter(body => body !== null);
 }
 
 /**
@@ -127,6 +128,6 @@ module.exports = {
     removeAndroidLogPrefix,
     flattenLogs,
     sortLogs,
-    extractBody,
+    extractBodies,
     unescape
 };

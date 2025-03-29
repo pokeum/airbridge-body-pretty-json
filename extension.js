@@ -6,7 +6,10 @@ const modifier = require('./modifier');
  */
 function activate(context) {
 
-	const disposable = vscode.commands.registerCommand('airbridge-body-pretty-json.airbridgePrettyJson', function () {
+	/** 
+	 * Command: Airbridge Pretty Json 
+	 */
+	const airbridgePrettyJson = vscode.commands.registerCommand('airbridge-body-pretty-json.airbridgePrettyJson', function () {
 
 		// Get active editor
 		const editor = vscode.window.activeTextEditor;
@@ -14,15 +17,14 @@ function activate(context) {
 
 		const document = editor.document;
 		const text = document.getText();
+		let modifiedText;
 
-		// Sort and flatten log
-		let modifiedText = modifier.sortLogs(modifier.flattenLogs(text)).join('\n');
-		
-		// Remove Android log prefix
-		modifiedText = modifier.removeAndroidLogPrefix(modifiedText);
+		// Flatten and sort logs
+		let logEntries = modifier.flattenLogs(text);
+		logEntries = modifier.sortLogs(logEntries);
 
 		// Get first available body content
-		const body = modifier.extractBody(modifiedText);
+		const body = modifier.extractBodies(logEntries)[0];
 		if (body) {
 			modifiedText = modifier.unescape(body);
 
@@ -49,7 +51,52 @@ function activate(context) {
 		});
 	});
 
-	context.subscriptions.push(disposable);
+	/**
+	 * Command: Airbridge Pretty Json - All
+	 */
+	const airbridgePrettyJsonAll = vscode.commands.registerCommand('airbridge-body-pretty-json.airbridgePrettyJsonAll', async function () {
+
+		// Get active editor
+		const editor = vscode.window.activeTextEditor;
+		if (!editor) { return; }
+
+		const document = editor.document;
+		const text = document.getText();
+		let modifiedText;
+
+		// Flatten and sort logs
+		let logEntries = modifier.flattenLogs(text);
+		logEntries = modifier.sortLogs(logEntries);
+
+		// Get all bodies
+		const bodies = modifier.extractBodies(logEntries);
+		if (bodies.length === 0) {
+			vscode.window.showErrorMessage("Unable to format: No body content found.");
+			return;
+		}
+		for (const body of bodies) {
+			let content = modifier.unescape(body);
+
+			// Pretty JSON
+			try {
+				const json = JSON.parse(content);
+				content = JSON.stringify(json, null, 4);
+			} catch (error) {
+				vscode.window.showErrorMessage(`Unable to format: Invalid JSON detected.\n${error.message}`);
+				return;
+			}
+
+			// Create and open a new untitled editor with the formatted JSON
+			try {
+				const doc = await vscode.workspace.openTextDocument({ language: 'json', content: content });
+				await vscode.window.showTextDocument(doc);
+			} catch (error) {
+				vscode.window.showErrorMessage(`Failed to create untitled file.\n${error.message}`);
+			}
+		}
+	});
+
+	context.subscriptions.push(airbridgePrettyJson, airbridgePrettyJsonAll);
 }
 
 // This method is called when your extension is deactivated
