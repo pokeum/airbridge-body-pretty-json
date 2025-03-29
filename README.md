@@ -20,14 +20,12 @@ This extension converts track event logs from the Airbridge Android SDK v4 into 
 
 ## Usage
 
-### Airbridge Pretty Json
-
-![Video](./media/airbridgePrettyJson.gif)
-
-### Airbridge Pretty Json (All)
-
-![Video](./media/airbridgePrettyJsonAll.gif)
-
 ### Editor Context Menu
 
 ![Image](./media/editor-context.png)
+
+### Video
+
+| Airbridge Pretty Json | Airbridge Pretty Json (All) |
+| -- | -- |
+| <img src="./media/airbridgePrettyJson.gif" alt="Video" width="600"/> | <img src="./media/airbridgePrettyJsonAll.gif" alt="Video" width="600"/> | 
