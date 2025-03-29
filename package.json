@@ -4,6 +4,7 @@
   "description": "This extension provides a simple tool to prettify (format) JSON string found in Airbridge body string.",
   "version": "0.0.2",
   "publisher": "pokeum",
+  "repository": "https://github.com/pokeum/airbridge-body-pretty-json",
   "engines": {
     "vscode": "^1.98.0"
   },
