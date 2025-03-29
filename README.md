@@ -6,4 +6,4 @@ Paginated logs are ignored unless all pages are present.
 
 ## Usage
 
-https://github.com/user-attachments/assets/07c45eb6-109f-43bb-bf93-b3fc0e7a2042
+https://github.com/user-attachments/assets/654ea0d7-0b31-41b7-973e-dcc3c21d230b
