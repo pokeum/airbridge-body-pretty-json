@@ -26,12 +26,19 @@ function activate(context) {
 		// Get first available body content
 		const body = modifier.extractBodies(logEntries)[0];
 		if (body) {
-			modifiedText = modifier.unescape(body);
-
-			// Pretty JSON
 			try {
-				const json = JSON.parse(modifiedText);
-				modifiedText = JSON.stringify(json, null, 4);
+				// Parse JSON
+				const eventChunk = JSON.parse(body);
+				eventChunk.events.forEach(eventPiece => {
+					try {
+						eventPiece.body = JSON.parse(eventPiece.body);
+					} catch (error) {
+						vscode.window.showErrorMessage(`Failed to parse event body.\n${error.message}`);
+					}
+				});
+
+				// Pretty JSON
+				modifiedText = JSON.stringify(eventChunk, null, 4);
 			} catch (error) {
 				vscode.window.showErrorMessage(`Unable to format: Invalid JSON detected.\n${error.message}`);
 				return;
@@ -62,7 +69,7 @@ function activate(context) {
 
 		const document = editor.document;
 		const text = document.getText();
-		let modifiedText;
+		let content;
 
 		// Flatten and sort logs
 		let logEntries = modifier.flattenLogs(text);
@@ -75,17 +82,24 @@ function activate(context) {
 			return;
 		}
 		for (const body of bodies) {
-			let content = modifier.unescape(body);
-
-			// Pretty JSON
 			try {
-				const json = JSON.parse(content);
-				content = JSON.stringify(json, null, 4);
+				// Parse JSON
+				const eventChunk = JSON.parse(body);
+				eventChunk.events.forEach(eventPiece => {
+					try {
+						eventPiece.body = JSON.parse(eventPiece.body);
+					} catch (error) {
+						vscode.window.showErrorMessage(`Failed to parse event body.\n${error.message}`);
+					}
+				});
+
+				// Pretty JSON
+				content = JSON.stringify(eventChunk, null, 4);
 			} catch (error) {
 				vscode.window.showErrorMessage(`Unable to format: Invalid JSON detected.\n${error.message}`);
 				return;
 			}
-
+			
 			// Create and open a new untitled editor with the formatted JSON
 			try {
 				const doc = await vscode.workspace.openTextDocument({ language: 'json', content: content });

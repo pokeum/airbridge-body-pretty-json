@@ -4,10 +4,10 @@ const vscode = require('vscode');
  * Remove Android Log Prefix:
  * https://developer.android.com/studio/debug/logcat
  * 
- * @param {string} input    The input string containing one or more Android log lines.
- * @returns {string}        The input string with all Android log prefixes removed.
+ * @param {string} logEntry     A single log entry string.
+ * @returns {string}            A log entry string with the android log prefix removed.
  */
-function removeAndroidLogPrefix(input) {
+function removeAndroidLogPrefix(logEntry) {
     const dateRegex = "\\d{4}-\\d{2}-\\d{2}"                    // e.g. 2022-12-29
     const timestampRegex = "\\d{2}:\\d{2}:\\d{2}\\.\\d{3}"      // e.g. 04:00:18.823
     const processAndThreadIdRegex = "\\d+-\\d+"                 // e.g. 30249-30321
@@ -16,8 +16,9 @@ function removeAndroidLogPrefix(input) {
     const priorityRegex = "[VDIWE]"                             // e.g. D
 
     const androidLogPrefixRegex =
-        `^${dateRegex}\\s+${timestampRegex}\\s+${processAndThreadIdRegex}\\s+${tagRegex}\\s+${packageNameRegex}\\s+${priorityRegex}\\s+`
-    return input.replace(new RegExp(androidLogPrefixRegex, "gm"), '');
+        new RegExp(`^${dateRegex}\\s+${timestampRegex}\\s+${processAndThreadIdRegex}\\s+${tagRegex}\\s+${packageNameRegex}\\s+${priorityRegex}\\s+`);
+
+    return logEntry.replace(androidLogPrefixRegex, '');
 }
 
 /**
@@ -55,7 +56,11 @@ function flattenLogs(input) {
     for (const id in logsById) {
         const { pages, total } = logsById[id];
         if (pages.filter(() => true).length === total) {
-            logEntries.push(pages.join(''));
+            logEntries.push(
+                pages
+                    .map((page, index) => index === 0 ? page : removeAndroidLogPrefix(page))
+                    .join('')
+            );
         } else {
             vscode.window.showErrorMessage(`Incomplete paginated log ignored (log ID: ${id}).`);
         }
@@ -108,26 +113,8 @@ function extractBodies(logEntries) {
         .filter(body => body !== null);
 }
 
-/**
- * Unescapes a string by replacing certain escaped 
- * characters and patterns with their literal forms.
- * 
- * @param {string} input    The escaped input string.
- * @returns {string}        The unescaped string.
- */
-function unescape(input) {
-    return input
-        .replace(/\\"/g, '"')                                       // \" to "
-        .replace(/\$\{([^}]+)\}/g, (match, param) => `$${param}`)   // ${PARAM} to $PARAM
-        .replace(/"\{/g, '{')                                       // "{ to {
-        .replace(/\}"/g, '}')                                       // }" to }
-        .replace(/\\\\\//g, '/');                                   // \/ to /
-}
-
 module.exports = {
-    removeAndroidLogPrefix,
     flattenLogs,
     sortLogs,
-    extractBodies,
-    unescape
+    extractBodies
 };
